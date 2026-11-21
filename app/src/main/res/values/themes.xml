@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ecotrack_cream">#F8F8F1</color>
+    <color name="ecotrack_green">#245643</color>
+
+    <style name="Theme.EcoTrack" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/ecotrack_cream</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:colorAccent">@color/ecotrack_green</item>
+    </style>
+
+    <style name="Theme.EcoTrack.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ecotrack_cream</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ecotrack_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.EcoTrack</item>
+    </style>
+</resources>

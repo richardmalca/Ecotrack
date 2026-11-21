@@ -1,0 +1,13 @@
+.gradle/
+.kotlin/
+.idea/
+**/build/
+local.properties
+
+
+supabase/.temp/
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore

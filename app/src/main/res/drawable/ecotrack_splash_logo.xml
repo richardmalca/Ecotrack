@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp" android:height="288dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:pathData="M37,26 H71 Q82,26 82,37 V71 Q82,82 71,82 H37 Q26,82 26,71 V37 Q26,26 37,26 Z"
+        android:fillColor="@color/ecotrack_green"/>
+    <group android:scaleX="1.65" android:scaleY="1.65" android:translateX="34.2" android:translateY="34.2">
+        <path android:pathData="M20,4 C14,4 8,6 8,12 a5,5 0,0 0,5 5 C19,17 20,10 20,4 Z M4,20 L15,10"
+            android:strokeColor="#FFFFFF" android:strokeWidth="1.8"
+            android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    </group>
+</vector>

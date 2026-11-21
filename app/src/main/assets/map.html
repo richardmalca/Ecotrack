@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="leaflet.css">
+<style>
+html,body{margin:0}#map{width:100%;height:315px;background:#e7ecdf}
+.collection-marker{display:grid;place-items:start center;width:44px;height:44px;color:white}
+.marker-face{display:grid;place-items:center;width:36px;height:36px;border:2px solid white;border-radius:50% 50% 50% 12px;box-sizing:border-box;transform:rotate(-45deg);box-shadow:0 3px 7px #182a214d}
+.leaflet-marker-icon:focus-visible .marker-face{outline:3px solid #182a21;outline-offset:2px}
+.collection-marker svg{width:20px;height:20px;transform:rotate(45deg);fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+</style>
+<div id="map" aria-label="Mapa de puntos de recolección"></div>
+<script src="leaflet.js"></script>
+<script>
+const map = L.map('map').setView([-7.1600,-78.5128],14);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+const markers = L.layerGroup().addTo(map);
+const routeLayer = L.layerGroup().addTo(map);
+const locationLayer = L.layerGroup().addTo(map);
+let accuracyLayer;
+let userMarker;
+let lastCenter = 0;
+let sawLocation = false;
+window.showLocation = function(position, centerRequest) {
+  if (!position) {
+    locationLayer.clearLayers();
+    accuracyLayer = userMarker = undefined;
+    return;
+  }
+  const [lat, lng, accuracy] = position;
+  const where = [lat, lng];
+  if (!userMarker) {
+    accuracyLayer = L.circle(where, {radius:accuracy, stroke:false, fillColor:'#2468aa', fillOpacity:0.12, interactive:false}).addTo(locationLayer);
+    userMarker = L.circleMarker(where, {radius:8, color:'#fff', weight:3, fillColor:'#2468aa', fillOpacity:1, interactive:false})
+      .addTo(locationLayer).bindTooltip('Tu ubicación');
+  } else {
+    accuracyLayer.setLatLng(where).setRadius(accuracy);
+    userMarker.setLatLng(where);
+  }
+  if (centerRequest !== lastCenter) {
+    map.setView(where, Math.max(15, map.getZoom()), {animate:false});
+  } else if (!sawLocation && map.distance(where, map.getCenter()) < 4000) {
+    const initialArea = L.latLngBounds([where]);
+    markers.eachLayer(marker => initialArea.extend(marker.getLatLng()));
+    map.fitBounds(initialArea, {padding:[28,36], maxZoom:15, animate:false});
+  }
+  sawLocation = true;
+  lastCenter = centerRequest;
+};
+const routeCredit = '<a href="https://routing.openstreetmap.de/about.html">FOSSGIS</a> · <a href="https://www.openstreetmap.org/fixthemap">Corregir mapa</a>';
+const types = [
+  ['#285785', '<path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6m-6 4h6"/>'],
+  ['#825128', '<path d="m3 7 9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4m-9 4v10M7.5 5l9 4"/>'],
+  ['#6b407f', '<path d="M10 3h4v5l3 4v8a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-8l3-4zM7 14h10"/>'],
+  ['#14645f', '<path d="M10 3h4m-3 0v4l-3 3v9a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-9l-3-3V3M8 12h8m-8 5h8"/>']
+];
+const mixed = ['#245643','<path d="M3 11h8v9H3zM13 8h8v12h-8zM6 11V4h9v4M6 14h2m8-3h2"/>'];
+let previousPoints = '';
+let previousRoute = '';
+window.showPoints = function(points) {
+  const next = JSON.stringify(points);
+  if (previousPoints === next) return;
+  previousPoints = next;
+  markers.clearLayers();
+  points.forEach(point => {
+    const [color, drawing] = types[point.kind] || mixed;
+    const icon = L.divIcon({
+      className: '', iconSize: [44,44], iconAnchor: [22,37],
+      html: '<span class="collection-marker"><span class="marker-face" style="background:' + color + '"><svg aria-hidden="true" viewBox="0 0 24 24">' + drawing + '</svg></span></span>'
+    });
+    const marker = L.marker([point.lat,point.lng], {icon, title: point.name}).addTo(markers);
+    marker.getElement().setAttribute('aria-label', point.name + '. Acepta: ' + point.accepts);
+    marker.on('click', () => { window.location.href = 'https://appassets.androidplatform.net/point/' + point.index; });
+  });
+};
+window.showRoute = function(line) {
+  const next = JSON.stringify(line);
+  if (previousRoute === next) return;
+  previousRoute = next;
+  routeLayer.clearLayers();
+  map.attributionControl.removeAttribution(routeCredit);
+  if (!line.length) return;
+  map.attributionControl.addAttribution(routeCredit);
+  const path = L.polyline(line, {color:'#245643', weight:6, opacity:0.92}).addTo(routeLayer);
+  L.circleMarker(line[0], {radius:7, color:'#fff', weight:3, fillColor:'#285785', fillOpacity:1}).addTo(routeLayer);
+  map.fitBounds(path.getBounds(), {padding:[22,22], maxZoom:17});
+};
+</script>
+</html>
